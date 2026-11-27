@@ -1,0 +1,26 @@
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - '127.0.0.1:8080:80'
+  redis:
+    image: redis:7-alpine
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 3
+  monitor:
+    image: python:3.12-alpine
+    command: ['python', '-u', '/app/monitor.py']
+    volumes:
+      - ./monitor.py:/app/monitor.py:ro
+    depends_on:
+      - web
+    ports:
+      - '127.0.0.1:8081:8081'
+volumes:
+  redis-data:
